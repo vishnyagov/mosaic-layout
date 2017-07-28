@@ -17,7 +17,7 @@ public protocol TRMosaicLayoutDelegate {
     
     func collectionView(_ collectionView:UICollectionView, mosaicCellSizeTypeAtIndexPath indexPath:IndexPath) -> TRMosaicCellType
     
-    func collectionView(_ collectionView:UICollectionView, layout collectionViewLayout: TRMosaicLayout, insetAtIndexPath: IndexPath) -> UIEdgeInsets
+    func collectionView(_ collectionView: UICollectionView!, layout collectionViewLayout: TRMosaicLayout!, interitemSpacingForSectionAt section: Int) -> CGFloat
     
     func heightForSmallMosaicCell() -> CGFloat
 }
@@ -192,7 +192,7 @@ open class TRMosaicLayout: UICollectionViewLayout {
         
         layoutAttributes.frame = frame
         
-        let cellHeight = layoutAttributes.frame.size.height + insetForMosaicCell(indexPath: indexPath).top
+        let cellHeight = layoutAttributes.frame.size.height + insetForMosaicCell(section: indexPath.section)
         
         cachedCellLayoutAttributes[indexPath] = layoutAttributes
         
@@ -217,13 +217,15 @@ open class TRMosaicLayout: UICollectionViewLayout {
         var originX = CGFloat(column) * (contentWidth / CGFloat(numberOfColumnsInSection))
         var originY = columns[column].columnHeight
         
-        let sectionInset = insetForMosaicCell(indexPath: indexPath)
+        let sectionInset = insetForMosaicCell(section: indexPath.section)
         
-        originX += sectionInset.left
-        originY += sectionInset.top
+        originX += originX == 0 ? 0 : sectionInset / 2
+        originY += sectionInset
         
-        cellWidth -= sectionInset.right
-        cellHeight -= sectionInset.bottom
+        if type == .big {
+            cellHeight += sectionInset
+        }
+        cellWidth -= sectionInset / 2
         
         return CGRect(x: originX, y: originY, width: cellWidth, height: cellHeight)
     }
@@ -290,8 +292,8 @@ open class TRMosaicLayout: UICollectionViewLayout {
     /**
      - returns: Returns the UIEdgeInsets that will be used for every cell as a border
      */
-    func insetForMosaicCell(indexPath: IndexPath) -> UIEdgeInsets {
-        return delegate.collectionView(collectionView!, layout: self, insetAtIndexPath: indexPath)
+    func insetForMosaicCell(section: Int) -> CGFloat {
+        return delegate.collectionView(collectionView!, layout: self, interitemSpacingForSectionAt: section)
     }
 }
 
